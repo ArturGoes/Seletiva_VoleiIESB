@@ -1,6 +1,7 @@
 import { type ReactNode, useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { onSaveStatus } from '../store/storage';
+import logoUrl from '../assets/iesb-logo.png';
 
 const NAV = [
   { to: '/', label: 'Painel', icon: IconePainel, exact: true },
@@ -32,7 +33,7 @@ function TopBar() {
       <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <img
-            src="./iesb-logo.png"
+            src={logoUrl}
             alt="IESB"
             className="w-9 h-9 rounded-full ring-2 ring-marca-dourado/70 bg-white/5"
           />
