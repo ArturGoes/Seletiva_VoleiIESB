@@ -7,8 +7,11 @@ import {
   TATICO_LABELS,
   TECNICO_LABELS
 } from '../types';
-import { EscalaInput, NotaBadge } from '../components/ui';
+import { Avatar, EscalaInput, NotaBadge, useToast } from '../components/ui';
+import { FasesAtleta } from '../components/FasesAtleta';
+import { enviarAtletaWhatsApp } from '../lib/whatsapp';
 import { foiAvaliado, mediaFisico, mediaTatico, mediaTecnico, notaFinalAtleta } from '../lib/scoring';
+import { useState } from 'react';
 
 const RECS: { v: Recomendacao; label: string; cor: string }[] = [
   { v: 'titular', label: 'Titular', cor: 'bg-green-600 text-white' },
@@ -24,6 +27,8 @@ export default function Avaliacao() {
   const setCriterio = useStore((s) => s.setCriterio);
   const setAvaliacao = useStore((s) => s.setAvaliacao);
   const atletas = useStore((s) => Object.values(s.atletas));
+  const { mostrar, Toast } = useToast();
+  const [enviando, setEnviando] = useState(false);
 
   // Fila do "modo rápido": presentes por ordem de chegada (ou todos, se ninguém marcado presente).
   const fila = useMemo(() => {
@@ -65,13 +70,14 @@ export default function Avaliacao() {
         )}
       </div>
 
-      <Link to={`/atletas/${atleta.id}`} className="card p-4 mb-4 flex items-center justify-between">
-        <div>
+      <Link to={`/atletas/${atleta.id}`} className="card p-4 mb-4 flex items-center gap-3">
+        <Avatar atleta={atleta} size={56} />
+        <div className="flex-1 min-w-0">
           <div className="text-xs text-marca-texto/50">Avaliando</div>
-          <h1 className="text-2xl text-marca-texto leading-tight">{atleta.nome}</h1>
-          <div className="text-sm text-marca-texto/60">{atleta.funcaoPreferida || 'Função não informada'}</div>
+          <h1 className="text-2xl text-marca-texto leading-tight truncate">{atleta.nome}</h1>
+          <div className="text-sm text-marca-texto/60 truncate">{atleta.funcaoPreferida || 'Função não informada'}</div>
         </div>
-        <div className="text-center">
+        <div className="text-center shrink-0">
           <NotaBadge atleta={atleta} />
           <div className="text-[10px] text-marca-texto/50 mt-1">nota 0-10</div>
         </div>
@@ -150,6 +156,28 @@ export default function Avaliacao() {
         />
       </div>
 
+      <div className="card p-4 mb-4">
+        <h2 className="font-titulo text-lg text-marca-vermelho mb-3">Fases da seletiva</h2>
+        <FasesAtleta atleta={atleta} />
+      </div>
+
+      <button
+        className="btn-zap w-full mb-4 text-base"
+        disabled={enviando}
+        onClick={async () => {
+          setEnviando(true);
+          try {
+            const r = await enviarAtletaWhatsApp(atleta, config);
+            mostrar(r === 'compartilhado' ? 'Card pronto para enviar!' : 'Card baixado + WhatsApp aberto');
+          } catch {
+            mostrar('Não foi possível gerar o card.');
+          }
+          setEnviando(false);
+        }}
+      >
+        {enviando ? 'Gerando card…' : 'Enviar para o WhatsApp (foto + dados)'}
+      </button>
+
       {/* Modo rápido */}
       <div className="flex gap-2 mb-2">
         <button
@@ -172,6 +200,7 @@ export default function Avaliacao() {
           Pular p/ próximo que falta avaliar →
         </button>
       )}
+      <Toast />
     </div>
   );
 }

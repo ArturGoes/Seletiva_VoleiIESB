@@ -8,6 +8,11 @@ export default function Configuracoes() {
   const nav = useNavigate();
   const config = useStore((s) => s.config);
   const setConfig = useStore((s) => s.setConfig);
+  const setEvento = useStore((s) => s.setEvento);
+  const addFase = useStore((s) => s.addFase);
+  const updateFase = useStore((s) => s.updateFase);
+  const removeFase = useStore((s) => s.removeFase);
+  const resetFases = useStore((s) => s.resetFases);
   const limparTudo = useStore((s) => s.limparTudo);
   const { mostrar, Toast } = useToast();
   const [confirmarLimpar, setConfirmarLimpar] = useState(false);
@@ -28,6 +33,68 @@ export default function Configuracoes() {
         ← Voltar
       </button>
       <h1 className="text-2xl text-marca-vermelho mb-4">Configurações</h1>
+
+      <div className="card p-4 mb-4">
+        <h2 className="text-sm text-marca-texto/50 mb-3">Evento & envio</h2>
+        <label className="rotulo">Nome do evento</label>
+        <input className="campo mb-3" value={config.evento.nome} onChange={(e) => setEvento({ nome: e.target.value })} />
+        <div className="grid grid-cols-2 gap-3 mb-3">
+          <div>
+            <label className="rotulo">Local</label>
+            <input className="campo" value={config.evento.local} onChange={(e) => setEvento({ local: e.target.value })} />
+          </div>
+          <div>
+            <label className="rotulo">Data</label>
+            <input className="campo" value={config.evento.data} onChange={(e) => setEvento({ data: e.target.value })} placeholder="ex: 24/08" />
+          </div>
+        </div>
+        <label className="rotulo">Meu WhatsApp (para receber os dados)</label>
+        <input
+          className="campo"
+          inputMode="tel"
+          value={config.evento.whatsappOrganizador}
+          onChange={(e) => setEvento({ whatsappOrganizador: e.target.value })}
+          placeholder="ex: 61999998888"
+        />
+        <p className="text-xs text-marca-texto/50 mt-1">
+          Usado quando o envio cai no modo texto (wa.me). No celular, o botão “Enviar para o WhatsApp” compartilha o card com foto.
+        </p>
+      </div>
+
+      <div className="card p-4 mb-4">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm text-marca-texto/50">Fases da seletiva</h2>
+          <button className="text-xs font-semibold text-marca-vermelho" onClick={resetFases}>
+            Restaurar padrão
+          </button>
+        </div>
+        <div className="flex flex-col gap-2">
+          {config.fases.map((f, i) => (
+            <div key={f.id} className="border border-black/10 rounded-xl p-2.5">
+              <div className="flex items-center gap-2">
+                <span className="font-titulo text-marca-texto/40 w-5 text-center">{i + 1}</span>
+                <input
+                  className="campo py-1.5 font-semibold"
+                  value={f.nome}
+                  onChange={(e) => updateFase(f.id, { nome: e.target.value })}
+                />
+                <button onClick={() => removeFase(f.id)} className="text-marca-vermelho text-xl px-1" aria-label="Remover fase">
+                  ×
+                </button>
+              </div>
+              <input
+                className="campo py-1.5 mt-2 text-sm"
+                value={f.descricao}
+                onChange={(e) => updateFase(f.id, { descricao: e.target.value })}
+                placeholder="Descrição (opcional)"
+              />
+            </div>
+          ))}
+        </div>
+        <button className="btn-fantasma w-full mt-3 text-sm" onClick={addFase}>
+          + Adicionar fase
+        </button>
+      </div>
 
       <div className="card p-4 mb-4">
         <div className="flex items-center justify-between mb-3">

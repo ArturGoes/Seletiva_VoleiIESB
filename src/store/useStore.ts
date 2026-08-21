@@ -8,10 +8,14 @@ import {
   type Config,
   type EstacaoCronograma,
   type EstadoApp,
+  type Evento,
+  type FaseAtleta,
+  type FaseDef,
   type Grupo,
   type Periodo,
   avaliacaoVazia,
-  configPadrao
+  configPadrao,
+  fasesVazias
 } from '../types';
 import { foiAvaliado } from '../lib/scoring';
 
@@ -26,6 +30,8 @@ interface Acoes {
   updateAtleta: (id: string, patch: Partial<Atleta>) => void;
   removeAtleta: (id: string) => void;
   toggleCheckin: (id: string) => void;
+  setFoto: (id: string, dataUrl: string | undefined) => void;
+  setFase: (id: string, faseId: string, patch: Partial<FaseAtleta>) => void;
   // Avaliação
   setAvaliacao: (id: string, patch: Partial<Avaliacao>) => void;
   setCriterio: (
@@ -36,6 +42,11 @@ interface Acoes {
   ) => void;
   // Config
   setConfig: (patch: Partial<Config>) => void;
+  setEvento: (patch: Partial<Evento>) => void;
+  addFase: () => void;
+  updateFase: (id: string, patch: Partial<FaseDef>) => void;
+  removeFase: (id: string) => void;
+  resetFases: () => void;
   // Grupos
   addGrupo: (categoria: Grupo['categoria'], nome?: string) => string;
   updateGrupo: (id: string, patch: Partial<Grupo>) => void;
@@ -103,7 +114,10 @@ export const useStore = create<Store>()(
               };
               atualizados++;
             } else {
-              atletas[nv.id] = nv;
+              atletas[nv.id] = {
+                ...nv,
+                fases: Object.keys(nv.fases || {}).length ? nv.fases : fasesVazias(s.config.fases)
+              };
               adicionados++;
             }
           }
@@ -137,7 +151,9 @@ export const useStore = create<Store>()(
             horarioCheckin: dados.horarioCheckin,
             numeroColete: dados.numeroColete,
             ordemChegada: dados.presente ? ordem : undefined,
+            foto: dados.foto,
             avaliacao: dados.avaliacao || avaliacaoVazia(),
+            fases: dados.fases || fasesVazias(s.config.fases),
             origem: 'manual'
           };
           return {
@@ -193,6 +209,22 @@ export const useStore = create<Store>()(
           };
         }),
 
+      setFoto: (id, dataUrl) =>
+        set((s) => {
+          const atual = s.atletas[id];
+          if (!atual) return {};
+          return { atletas: { ...s.atletas, [id]: { ...atual, foto: dataUrl } } };
+        }),
+
+      setFase: (id, faseId, patch) =>
+        set((s) => {
+          const atual = s.atletas[id];
+          if (!atual) return {};
+          const faseAtual = atual.fases?.[faseId] || { status: 'pendente', obs: '' };
+          const fases = { ...atual.fases, [faseId]: { ...faseAtual, ...patch } };
+          return { atletas: { ...s.atletas, [id]: { ...atual, fases } } };
+        }),
+
       setAvaliacao: (id, patch) =>
         set((s) => {
           const atual = s.atletas[id];
@@ -216,6 +248,43 @@ export const useStore = create<Store>()(
         }),
 
       setConfig: (patch) => set((s) => ({ config: { ...s.config, ...patch } })),
+
+      setEvento: (patch) =>
+        set((s) => ({ config: { ...s.config, evento: { ...s.config.evento, ...patch } } })),
+
+      addFase: () =>
+        set((s) => ({
+          config: {
+            ...s.config,
+            fases: [
+              ...s.config.fases,
+              { id: uid('f'), nome: `Fase ${s.config.fases.length + 1}`, descricao: '' }
+            ]
+          }
+        })),
+
+      updateFase: (id, patch) =>
+        set((s) => ({
+          config: {
+            ...s.config,
+            fases: s.config.fases.map((f) => (f.id === id ? { ...f, ...patch } : f))
+          }
+        })),
+
+      removeFase: (id) =>
+        set((s) => {
+          const fases = s.config.fases.filter((f) => f.id !== id);
+          const atletas = { ...s.atletas };
+          for (const k of Object.keys(atletas)) {
+            const { [id]: _omit, ...resto } = atletas[k].fases || {};
+            void _omit;
+            atletas[k] = { ...atletas[k], fases: resto };
+          }
+          return { config: { ...s.config, fases }, atletas };
+        }),
+
+      resetFases: () =>
+        set((s) => ({ config: { ...s.config, fases: configPadrao().fases } })),
 
       addGrupo: (categoria, nome) => {
         const id = uid('g');
@@ -248,21 +317,15 @@ export const useStore = create<Store>()(
 
       resetCronograma: () => set(() => ({ cronograma: cronogramaSugerido() })),
 
-      carregarEstado: (estado) =>
-        set(() => ({
-          atletas: estado.atletas || {},
-          config: { ...configPadrao(), ...(estado.config || {}) },
-          grupos: estado.grupos || [],
-          cronograma: estado.cronograma || [],
-          proximaOrdemChegada: estado.proximaOrdemChegada || 1
-        })),
+      carregarEstado: (estado) => set(() => normalizarEstado(estado)),
 
       limparTudo: () => set(() => estadoInicial())
     }),
     {
       name: 'estado-app',
-      version: 1,
+      version: 2,
       storage: createJSONStorage(() => localforageStorage),
+      migrate: (persisted) => normalizarEstado(persisted as Partial<EstadoApp>),
       partialize: (s) => ({
         atletas: s.atletas,
         config: s.config,
@@ -273,6 +336,35 @@ export const useStore = create<Store>()(
     }
   )
 );
+
+/** Garante que estado (persistido ou importado) tenha todos os campos novos. */
+function normalizarEstado(estado: Partial<EstadoApp> | undefined): EstadoApp {
+  const padrao = configPadrao();
+  const config: Config = {
+    ...padrao,
+    ...(estado?.config || {}),
+    pesos: { ...padrao.pesos, ...(estado?.config?.pesos || {}) },
+    vagas: { ...padrao.vagas, ...(estado?.config?.vagas || {}) },
+    fases: estado?.config?.fases?.length ? estado.config.fases : padrao.fases,
+    evento: { ...padrao.evento, ...(estado?.config?.evento || {}) }
+  };
+  const atletasIn = estado?.atletas || {};
+  const atletas: Record<string, Atleta> = {};
+  for (const [id, a] of Object.entries(atletasIn)) {
+    atletas[id] = {
+      ...a,
+      avaliacao: a.avaliacao || avaliacaoVazia(),
+      fases: a.fases && Object.keys(a.fases).length ? a.fases : fasesVazias(config.fases)
+    };
+  }
+  return {
+    atletas,
+    config,
+    grupos: estado?.grupos || [],
+    cronograma: estado?.cronograma || [],
+    proximaOrdemChegada: estado?.proximaOrdemChegada || 1
+  };
+}
 
 export function normalizarZap(zap: string | undefined): string {
   if (!zap) return '';

@@ -167,6 +167,7 @@ export function linhasParaAtletas(
       periodoAlocado: undefined,
       presente: false,
       avaliacao: avaliacaoVazia(),
+      fases: {},
       origem: 'inscricao'
     });
   }

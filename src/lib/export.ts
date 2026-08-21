@@ -7,6 +7,7 @@ import {
   CATEGORIA_LABEL,
   PERIODO_DISP_LABEL,
   RECOMENDACAO_LABEL,
+  STATUS_FASE_LABEL,
   TECNICO_LABELS,
   FISICO_LABELS,
   TATICO_LABELS
@@ -83,6 +84,12 @@ export function exportarCSVCompleto(atletas: Atleta[], config: Config) {
     base['Destaque'] = av.destaque ? '⭐' : '';
     base['Recomendacao'] = RECOMENDACAO_LABEL[av.recomendacao];
     base['Avaliador'] = av.avaliador;
+    base['TemFoto'] = a.foto ? 'Sim' : 'Não';
+    for (const f of config.fases) {
+      const fa = a.fases?.[f.id];
+      base[`Fase_${f.nome}`] = fa ? STATUS_FASE_LABEL[fa.status] : '';
+      if (fa?.obs) base[`FaseObs_${f.nome}`] = fa.obs;
+    }
     base['Observacoes'] = av.observacoesAvaliacao;
     return base;
   });

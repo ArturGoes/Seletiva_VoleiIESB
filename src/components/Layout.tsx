@@ -27,13 +27,18 @@ export default function Layout({ children }: { children: ReactNode }) {
 
 function TopBar() {
   return (
-    <header className="sticky top-0 z-40 bg-marca-vermelho text-white shadow-md safe-top">
+    <header className="sticky top-0 z-40 bg-marca-grad text-white shadow-forte safe-top">
+      <div className="h-[3px] bg-marca-dourado/90" />
       <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <BolaAreia />
+        <div className="flex items-center gap-2.5">
+          <img
+            src="./iesb-logo.png"
+            alt="IESB"
+            className="w-9 h-9 rounded-full ring-2 ring-marca-dourado/70 bg-white/5"
+          />
           <div className="leading-none">
-            <div className="font-titulo text-lg tracking-wide">SELETIVA IESB</div>
-            <div className="text-[10px] tracking-[0.2em] text-marca-dourado font-semibold">
+            <div className="font-display font-bold text-lg tracking-tight">Seletiva IESB</div>
+            <div className="text-[10px] tracking-[0.22em] text-marca-dourado font-semibold">
               #FIRMENAAREIA
             </div>
           </div>
@@ -97,17 +102,6 @@ function BottomNav() {
         ))}
       </div>
     </nav>
-  );
-}
-
-function BolaAreia() {
-  return (
-    <svg width="30" height="30" viewBox="0 0 100 100" aria-hidden>
-      <circle cx="50" cy="50" r="46" fill="#E9C169" stroke="#fff" strokeWidth="4" />
-      <path d="M50 6 C 50 40, 50 60, 20 92" stroke="#7C0E1E" strokeWidth="4" fill="none" />
-      <path d="M50 6 C 60 40, 80 55, 94 55" stroke="#7C0E1E" strokeWidth="4" fill="none" />
-      <path d="M8 55 C 40 55, 62 65, 82 92" stroke="#7C0E1E" strokeWidth="4" fill="none" />
-    </svg>
   );
 }
 

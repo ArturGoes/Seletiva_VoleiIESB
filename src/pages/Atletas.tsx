@@ -9,7 +9,7 @@ import {
   CATEGORIA_LABEL,
   PERIODO_LABEL
 } from '../types';
-import { CategoriaChip, NotaBadge, PresencaBadge } from '../components/ui';
+import { Avatar, CategoriaChip, NotaBadge, PresencaBadge } from '../components/ui';
 
 type Ordenacao = 'nome' | 'nota' | 'chegada';
 
@@ -122,7 +122,9 @@ function LinhaAtleta({ atleta, onCheckin }: { atleta: Atleta; onCheckin: () => v
       >
         {atleta.presente ? '✓' : '＋'}
       </button>
-      <Link to={`/atletas/${atleta.id}`} className="flex-1 min-w-0">
+      <Link to={`/atletas/${atleta.id}`} className="flex-1 min-w-0 flex items-center gap-3">
+        <Avatar atleta={atleta} size={40} />
+        <div className="min-w-0">
         <div className="font-semibold truncate flex items-center gap-1.5">
           {atleta.avaliacao.destaque && <span>⭐</span>}
           {atleta.numeroColete && (
@@ -136,6 +138,7 @@ function LinhaAtleta({ atleta, onCheckin }: { atleta: Atleta; onCheckin: () => v
             <span className="chip bg-gray-100 text-gray-600">{PERIODO_LABEL[atleta.periodoAlocado]}</span>
           )}
           <PresencaBadge presente={atleta.presente} />
+        </div>
         </div>
       </Link>
       <div className="shrink-0 flex flex-col items-end gap-1">

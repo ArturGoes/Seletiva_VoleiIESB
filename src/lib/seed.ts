@@ -63,6 +63,7 @@ function fazAtleta(nome: string, sexo: Exclude<Sexo, undefined>): Atleta {
     categoria: cat,
     presente: false,
     avaliacao: avaliacaoVazia(),
+    fases: {},
     origem: 'inscricao'
   };
 }

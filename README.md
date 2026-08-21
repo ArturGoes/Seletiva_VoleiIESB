@@ -9,16 +9,22 @@ rubrica técnica/física/tática, organize a **dinâmica** (manhã/tarde × cate
 
 ## ✨ Principais recursos
 
-- **100% offline** — roda no navegador, sem backend, sem login, sem nuvem. Instalável como **PWA**.
+- **100% offline** — roda no navegador, sem backend, sem login, sem nuvem. Instalável como **PWA**
+  (ícone oficial do IESB na tela inicial).
 - **Salvamento automático** em cada ação (IndexedDB, com fallback para localStorage). Nada se perde ao
   recarregar ou cair a conexão.
+- **📸 Foto de cada atleta** — tira na hora pela câmera do celular (ou galeria); fica no card e no envio.
+- **🧭 Fases da seletiva** — registre cada fase do dia (chegada, aquecimento, fundamentos, testes
+  físicos, jogo avaliativo, decisão) com status e anotação por atleta. As fases são **editáveis**.
+- **Avaliação individual** com rubrica 0–5 (Técnico/Físico/Tático), nota final ponderada e modo rápido.
+- **📲 Enviar para o WhatsApp** — gera um **card com foto + dados + notas + fases** e compartilha
+  direto no WhatsApp (Web Share no celular); no computador, baixa a imagem e abre sua conversa com o texto.
 - **Importar CSV** do Google Forms/Sheets, com reconhecimento flexível de colunas e tela de mapeamento.
-- **Check-in em um toque**, categorias e período definidos no dia.
-- **Avaliação** com rubrica 0–5 (Técnico/Físico/Tático), nota final ponderada e modo rápido.
-- **Ranking por categoria**, titulares/reservas por vagas, comparação lado a lado.
+- **Check-in em um toque**; categoria e período são **opcionais** (podem ser definidos depois).
+- **Ranking** por categoria, titulares/reservas por vagas, comparação lado a lado.
 - **Formação** de duplas (F/M) e quarteto misto com nota média.
-- **Cronograma editável**, listas de chamada e **cronômetro** para as estações.
-- **Exportar** CSV/JSON, **resumo imprimível (PDF)** e **backup/restauração** completos.
+- **Cronograma editável**, painel de fases, listas de chamada e **cronômetro** para as estações.
+- **Exportar** CSV/JSON (com fases), **resumo imprimível (PDF)** e **backup/restauração** completos.
 
 ## 🚀 Rodando o projeto
 
@@ -48,12 +54,24 @@ localmente. O `base` já está configurado como relativo (`./`), então funciona
 ## 📝 Como avaliar
 
 1. Faça o **check-in** do atleta (na lista, na ficha ou na chamada da Seletiva).
-2. Na ficha, defina **categoria**, **período** (manhã/tarde) e, se precisar, **sexo** e **nº de colete**.
+2. Na ficha, toque no **avatar para tirar/anexar a foto** do atleta. Defina **categoria** e **período**
+   se quiser (são opcionais — dá para deixar “a definir” e resolver depois).
 3. Toque em **Avaliar**: dê notas **0–5** em cada item de Técnico, Físico e Tático. A **nota final**
-   (média ponderada) é calculada automaticamente. Marque **⭐ destaque** e a **recomendação**
-   (titular/reserva/cortado), se quiser.
-4. Use **Próximo →** para avaliar em sequência, ou **pular para o próximo que falta avaliar**.
-5. Os **pesos** das dimensões e o **nº de vagas** por categoria são editáveis em **Configurações**.
+   (média ponderada) é calculada automaticamente. Marque **⭐ destaque** e a **recomendação**.
+4. Preencha as **Fases da seletiva** (status ✓ / ⭐ / ✕ e anotação por fase). Na aba
+   **Seletiva → Fases** dá para rodar uma fase para todos os presentes de uma vez.
+5. Use **Próximo →** para avaliar em sequência, ou **pular para o próximo que falta avaliar**.
+6. Os **pesos**, a **escala**, as **fases** e as **vagas** são editáveis em **Configurações**.
+
+## 📲 Enviar os dados para o seu WhatsApp
+
+1. Em **Configurações → Evento & envio**, coloque o **seu número de WhatsApp** (para o modo texto).
+2. Na ficha ou na tela de avaliação do atleta, toque em **Enviar para o WhatsApp (foto + dados)**:
+   - **No celular:** abre o menu de compartilhamento com um **card em imagem** (foto + notas + fases) —
+     escolha o WhatsApp e mande para você mesmo ou para o grupo.
+   - **No computador:** baixa a imagem do card e abre sua conversa com o resumo em texto para colar.
+3. Em **Exportar → Enviar para o WhatsApp** você também **baixa todos os cards** de uma vez e pode
+   mandar o **resumo geral** (ranking em texto) para o seu número.
 
 ## 📊 Ranking e seleção
 
@@ -77,9 +95,9 @@ Na aba **Exportar**:
 
 ## 🎨 Identidade visual
 
-Vermelho `#C8102E`, dourado `#E9C169`, vermelho escuro `#7C0E1E`, texto `#241014` e fundo claro
-`#FFF7F3`. Títulos em **Oswald**, corpo em **Inter** (com fallback para fontes do sistema, para
-funcionar mesmo offline).
+Logo oficial do **IESB**, vermelho `#C8102E`, dourado `#E9C169`, vinho `#7C0E1E`/`#5E0A15`, texto
+`#241014` e fundo claro. Títulos em **Fraunces** (serifada, elegante), corpo em **Inter** e números em
+**Oswald** — todas com fallback para fontes do sistema, para funcionar mesmo offline.
 
 ## 🧱 Stack
 

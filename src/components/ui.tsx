@@ -1,7 +1,8 @@
-import { type ReactNode, useEffect, useState } from 'react';
-import { type Atleta, type Categoria, CATEGORIA_CURTA } from '../types';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
+import { type Atleta, type Categoria, type StatusFase, CATEGORIA_CURTA, STATUS_FASE_LABEL } from '../types';
 import { useStore } from '../store/useStore';
 import { nota10 } from '../lib/scoring';
+import { arquivoParaDataUrl } from '../lib/photo';
 
 const CORES_CAT: Record<Categoria, string> = {
   dupla_fem: 'bg-pink-100 text-pink-800',
@@ -11,7 +12,39 @@ const CORES_CAT: Record<Categoria, string> = {
 };
 
 export function CategoriaChip({ cat }: { cat: Categoria }) {
+  if (cat === 'indefinido') return null;
   return <span className={`chip ${CORES_CAT[cat]}`}>{CATEGORIA_CURTA[cat]}</span>;
+}
+
+const CORES_STATUS: Record<StatusFase, string> = {
+  pendente: 'bg-gray-100 text-gray-500',
+  concluido: 'bg-green-100 text-green-800',
+  destaque: 'bg-marca-dourado/30 text-marca-escuro',
+  nao: 'bg-marca-vermelho/10 text-marca-vermelho'
+};
+export function FaseStatusChip({ status }: { status: StatusFase }) {
+  const icone = status === 'concluido' ? '✓' : status === 'destaque' ? '⭐' : status === 'nao' ? '✕' : '○';
+  return (
+    <span className={`chip ${CORES_STATUS[status]}`}>
+      {icone} {STATUS_FASE_LABEL[status]}
+    </span>
+  );
+}
+
+export function Avatar({ atleta, size = 44 }: { atleta: Atleta; size?: number }) {
+  const inicial = (atleta.nome[0] || '?').toUpperCase();
+  return (
+    <div
+      className="shrink-0 rounded-full overflow-hidden bg-marca-grad text-white flex items-center justify-center font-display font-bold ring-1 ring-black/5"
+      style={{ width: size, height: size, fontSize: size * 0.42 }}
+    >
+      {atleta.foto ? (
+        <img src={atleta.foto} alt={atleta.nome} className="w-full h-full object-cover" />
+      ) : (
+        inicial
+      )}
+    </div>
+  );
 }
 
 export function PresencaBadge({ presente }: { presente: boolean }) {
@@ -134,6 +167,53 @@ export function PageHeader({ titulo, acao }: { titulo: string; acao?: ReactNode 
     <div className="flex items-center justify-between gap-3 mb-4">
       <h1 className="text-2xl text-marca-vermelho">{titulo}</h1>
       {acao}
+    </div>
+  );
+}
+
+/** Captura/atualiza a foto do atleta (câmera no celular ou galeria). */
+export function BotaoFoto({ atleta }: { atleta: Atleta }) {
+  const setFoto = useStore((s) => s.setFoto);
+  const ref = useRef<HTMLInputElement>(null);
+  const [erro, setErro] = useState('');
+
+  async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const dataUrl = await arquivoParaDataUrl(file);
+      setFoto(atleta.id, dataUrl);
+      setErro('');
+    } catch {
+      setErro('Não deu para usar essa imagem.');
+    }
+    e.target.value = '';
+  }
+
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <button
+        onClick={() => ref.current?.click()}
+        className="relative rounded-full active:scale-95 transition"
+        aria-label="Adicionar foto"
+      >
+        <Avatar atleta={atleta} size={96} />
+        <span className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-marca-vermelho text-white flex items-center justify-center text-sm shadow ring-2 ring-white">
+          📷
+        </span>
+      </button>
+      <div className="flex gap-3 text-xs">
+        <button className="text-marca-vermelho font-semibold" onClick={() => ref.current?.click()}>
+          {atleta.foto ? 'Trocar foto' : 'Adicionar foto'}
+        </button>
+        {atleta.foto && (
+          <button className="text-marca-texto/40" onClick={() => setFoto(atleta.id, undefined)}>
+            Remover
+          </button>
+        )}
+      </div>
+      {erro && <span className="text-xs text-marca-vermelho">{erro}</span>}
+      <input ref={ref} type="file" accept="image/*" capture="environment" className="hidden" onChange={onFile} />
     </div>
   );
 }

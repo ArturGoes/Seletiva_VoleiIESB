@@ -7,7 +7,7 @@ import {
   PERIODO_LABEL,
   PERIODO_DISP_LABEL
 } from '../types';
-import { CategoriaChip, NotaBadge, PresencaBadge } from '../components/ui';
+import { Avatar, CategoriaChip, NotaBadge, PresencaBadge } from '../components/ui';
 import { notaFinalAtleta } from '../lib/scoring';
 
 const BLOCOS: Record<EstacaoCronograma['bloco'], { label: string; cor: string }> = {
@@ -19,9 +19,10 @@ const BLOCOS: Record<EstacaoCronograma['bloco'], { label: string; cor: string }>
 };
 
 export default function Seletiva() {
-  const [aba, setAba] = useState<'chamada' | 'cronograma' | 'duplas' | 'timer'>('chamada');
+  const [aba, setAba] = useState<'chamada' | 'fases' | 'cronograma' | 'duplas' | 'timer'>('chamada');
   const LABEL: Record<typeof aba, string> = {
     chamada: 'Chamada',
+    fases: 'Fases',
     cronograma: 'Cronograma',
     duplas: 'Duplas',
     timer: 'Cronômetro'
@@ -29,12 +30,12 @@ export default function Seletiva() {
   return (
     <div>
       <h1 className="text-2xl text-marca-vermelho mb-3">Seletiva</h1>
-      <div className="flex gap-1 bg-marca-dourado/15 rounded-xl p-1 mb-4">
-        {(['chamada', 'cronograma', 'duplas', 'timer'] as const).map((a) => (
+      <div className="flex gap-1 bg-marca-dourado/15 rounded-xl p-1 mb-4 overflow-x-auto no-scrollbar">
+        {(['chamada', 'fases', 'cronograma', 'duplas', 'timer'] as const).map((a) => (
           <button
             key={a}
             onClick={() => setAba(a)}
-            className={`flex-1 py-2 rounded-lg text-xs sm:text-sm font-semibold transition ${
+            className={`flex-1 shrink-0 px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold transition whitespace-nowrap ${
               aba === a ? 'bg-white shadow text-marca-vermelho' : 'text-marca-texto/60'
             }`}
           >
@@ -43,9 +44,96 @@ export default function Seletiva() {
         ))}
       </div>
       {aba === 'chamada' && <Chamada />}
+      {aba === 'fases' && <FasesPainel />}
       {aba === 'cronograma' && <Cronograma />}
       {aba === 'duplas' && <Formacao />}
       {aba === 'timer' && <Cronometro />}
+    </div>
+  );
+}
+
+/* ---------------- Painel de fases (rodar o dia) ---------------- */
+function FasesPainel() {
+  const fases = useStore((s) => s.config.fases);
+  const atletas = useStore((s) => Object.values(s.atletas));
+  const setFase = useStore((s) => s.setFase);
+  const [faseId, setFaseId] = useState<string>(fases[0]?.id || '');
+  const fase = fases.find((f) => f.id === faseId) || fases[0];
+
+  const presentes = atletas
+    .filter((a) => a.presente)
+    .sort((a, b) => (a.ordemChegada ?? 1e9) - (b.ordemChegada ?? 1e9) || a.nome.localeCompare(b.nome, 'pt-BR'));
+
+  if (!fase) {
+    return <div className="card p-6 text-center text-marca-texto/50 text-sm">Nenhuma fase configurada.</div>;
+  }
+
+  const conta = (st: string) =>
+    presentes.filter((a) => (a.fases?.[fase.id]?.status || 'pendente') === st).length;
+
+  return (
+    <div>
+      <div className="flex gap-1 overflow-x-auto no-scrollbar mb-3">
+        {fases.map((f) => (
+          <button
+            key={f.id}
+            onClick={() => setFaseId(f.id)}
+            className={`shrink-0 btn min-h-[38px] px-3 text-sm ${
+              faseId === f.id ? 'bg-marca-vermelho text-white' : 'bg-white border border-black/10'
+            }`}
+          >
+            {f.nome}
+          </button>
+        ))}
+      </div>
+
+      <div className="card-ouro p-3 mb-3">
+        <div className="text-sm text-marca-texto/70">{fase.descricao || 'Marque o status de cada atleta nesta fase.'}</div>
+        <div className="flex gap-3 mt-2 text-xs">
+          <span className="text-green-700 font-semibold">✓ {conta('concluido')}</span>
+          <span className="text-marca-escuro font-semibold">⭐ {conta('destaque')}</span>
+          <span className="text-marca-vermelho font-semibold">✕ {conta('nao')}</span>
+          <span className="text-marca-texto/40">○ {conta('pendente')}</span>
+        </div>
+      </div>
+
+      {presentes.length === 0 && (
+        <div className="card p-6 text-center text-marca-texto/50 text-sm">
+          Faça o check-in dos atletas para rodar as fases.
+        </div>
+      )}
+
+      <div className="flex flex-col gap-2">
+        {presentes.map((a) => {
+          const st = a.fases?.[fase.id]?.status || 'pendente';
+          return (
+            <div key={a.id} className="card p-2.5 flex items-center gap-2">
+              <Avatar atleta={a} size={38} />
+              <Link to={`/atletas/${a.id}`} className="flex-1 min-w-0 font-semibold truncate text-sm">
+                {a.numeroColete && <span className="text-marca-texto/40">#{a.numeroColete} </span>}
+                {a.nome}
+              </Link>
+              {(
+                [
+                  ['concluido', '✓', 'bg-green-600 text-white'],
+                  ['destaque', '⭐', 'bg-marca-dourado text-marca-texto'],
+                  ['nao', '✕', 'bg-marca-vermelho text-white']
+                ] as const
+              ).map(([v, icone, cor]) => (
+                <button
+                  key={v}
+                  onClick={() => setFase(a.id, fase.id, { status: st === v ? 'pendente' : v })}
+                  className={`w-9 h-9 rounded-lg text-sm font-bold border transition ${
+                    st === v ? cor : 'bg-white text-marca-texto/50 border-black/10'
+                  }`}
+                >
+                  {icone}
+                </button>
+              ))}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

@@ -10,7 +10,9 @@ import {
   PERIODO_DISP_LABEL,
   PERIODO_LABEL
 } from '../types';
-import { Confirmar, NotaBadge, PresencaBadge } from '../components/ui';
+import { BotaoFoto, Confirmar, NotaBadge, PresencaBadge, useToast } from '../components/ui';
+import { enviarAtletaWhatsApp } from '../lib/whatsapp';
+import { FasesAtleta } from '../components/FasesAtleta';
 
 export default function FichaAtleta() {
   const { id = '' } = useParams();
@@ -19,7 +21,10 @@ export default function FichaAtleta() {
   const updateAtleta = useStore((s) => s.updateAtleta);
   const toggleCheckin = useStore((s) => s.toggleCheckin);
   const removeAtleta = useStore((s) => s.removeAtleta);
+  const config = useStore((s) => s.config);
   const [confirmar, setConfirmar] = useState(false);
+  const [enviando, setEnviando] = useState(false);
+  const { mostrar, Toast } = useToast();
 
   if (!atleta) {
     return (
@@ -44,15 +49,18 @@ export default function FichaAtleta() {
       </button>
 
       <div className="card p-4 mb-4">
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <h1 className="text-2xl text-marca-texto leading-tight">
-              {atleta.avaliacao.destaque && '⭐ '}
-              {atleta.nome}
-            </h1>
+        <div className="flex items-start gap-4">
+          <BotaoFoto atleta={atleta} />
+          <div className="flex-1 min-w-0 pt-1">
+            <div className="flex items-start justify-between gap-2">
+              <h1 className="text-2xl text-marca-texto leading-tight break-words">
+                {atleta.avaliacao.destaque && '⭐ '}
+                {atleta.nome}
+              </h1>
+              <NotaBadge atleta={atleta} />
+            </div>
             <div className="text-sm text-marca-texto/60">{atleta.curso || '—'}</div>
           </div>
-          <NotaBadge atleta={atleta} />
         </div>
         <div className="flex items-center gap-2 mt-3 flex-wrap">
           <PresencaBadge presente={atleta.presente} />
@@ -131,6 +139,10 @@ export default function FichaAtleta() {
         )}
       </Secao>
 
+      <Secao titulo="Fases da seletiva">
+        <FasesAtleta atleta={atleta} />
+      </Secao>
+
       <Secao titulo="Dados da inscrição">
         <dl className="text-sm divide-y divide-marca-dourado/20">
           <Item t="E-mail" v={atleta.email} />
@@ -157,7 +169,7 @@ export default function FichaAtleta() {
         </dl>
       </Secao>
 
-      <div className="grid grid-cols-2 gap-3 mb-4">
+      <div className="grid grid-cols-2 gap-3 mb-3">
         <Link to={`/avaliar/${atleta.id}`} className="btn-primario">
           Avaliar atleta
         </Link>
@@ -171,6 +183,23 @@ export default function FichaAtleta() {
           </Link>
         )}
       </div>
+
+      <button
+        className="btn-zap w-full mb-4 text-base"
+        disabled={enviando}
+        onClick={async () => {
+          setEnviando(true);
+          try {
+            const r = await enviarAtletaWhatsApp(atleta, config);
+            mostrar(r === 'compartilhado' ? 'Card pronto para enviar!' : 'Card baixado + WhatsApp aberto');
+          } catch {
+            mostrar('Não foi possível gerar o card.');
+          }
+          setEnviando(false);
+        }}
+      >
+        {enviando ? 'Gerando card…' : ' Enviar para o WhatsApp (foto + dados)'}
+      </button>
 
       <button className="btn-perigo w-full" onClick={() => setConfirmar(true)}>
         Remover atleta
@@ -188,6 +217,7 @@ export default function FichaAtleta() {
           nav('/atletas');
         }}
       />
+      <Toast />
     </div>
   );
 }

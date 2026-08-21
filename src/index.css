@@ -15,14 +15,13 @@
     @apply bg-marca-fundo text-marca-texto font-corpo antialiased;
     -webkit-tap-highlight-color: transparent;
     overscroll-behavior-y: none;
+    background-image: radial-gradient(1200px 500px at 100% -10%, rgba(233, 193, 105, 0.14), transparent 60%);
   }
   h1,
   h2,
-  h3,
-  .titulo {
-    @apply font-titulo uppercase tracking-wide;
+  h3 {
+    @apply font-display;
   }
-  /* Área segura para notch em celulares */
   .safe-bottom {
     padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
   }
@@ -33,20 +32,33 @@
 
 @layer components {
   .card {
-    @apply bg-white rounded-2xl shadow-card border border-marca-dourado/30;
+    @apply bg-white rounded-2xl shadow-card border border-black/[0.04];
+  }
+  .card-ouro {
+    @apply bg-white rounded-2xl shadow-card border border-marca-dourado/40;
   }
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 min-h-[44px] font-semibold
-      transition active:scale-[0.98] select-none;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 min-h-[46px] font-semibold
+      transition-all active:scale-[0.98] select-none;
   }
   .btn-primario {
     @apply btn bg-marca-vermelho text-white shadow-sm hover:bg-marca-escuro;
   }
+  .btn-grad {
+    @apply btn bg-marca-grad text-white shadow-forte hover:brightness-110;
+  }
   .btn-dourado {
     @apply btn bg-marca-dourado text-marca-texto hover:brightness-95;
   }
+  .btn-zap {
+    @apply btn text-white shadow-sm;
+    background: #25d366;
+  }
+  .btn-zap:hover {
+    filter: brightness(0.95);
+  }
   .btn-fantasma {
-    @apply btn bg-white text-marca-texto border border-marca-dourado/50 hover:bg-marca-dourado/10;
+    @apply btn bg-white text-marca-texto border border-black/10 hover:bg-marca-dourado/10;
   }
   .btn-perigo {
     @apply btn bg-white text-marca-vermelho border border-marca-vermelho/40 hover:bg-marca-vermelho/10;
@@ -55,14 +67,14 @@
     @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold;
   }
   .campo {
-    @apply w-full rounded-xl border border-marca-dourado/40 bg-white px-3 py-2.5 text-base
+    @apply w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-base
       outline-none focus:border-marca-vermelho focus:ring-2 focus:ring-marca-vermelho/20;
   }
   .rotulo {
-    @apply block text-sm font-semibold text-marca-texto/70 mb-1;
+    @apply block text-sm font-semibold text-marca-texto/60 mb-1;
   }
-  .hairline {
-    @apply border-b border-marca-dourado/30;
+  .eyebrow {
+    @apply text-[11px] font-bold uppercase tracking-[0.18em] text-marca-vermelho/80;
   }
 }
 
@@ -74,7 +86,6 @@
   scrollbar-width: none;
 }
 
-/* Barra de rolagem discreta */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;

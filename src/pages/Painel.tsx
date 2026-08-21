@@ -8,6 +8,7 @@ import { CategoriaChip, ProgressBar, Stat, useToast } from '../components/ui';
 
 export default function Painel() {
   const atletas = useStore((s) => Object.values(s.atletas));
+  const evento = useStore((s) => s.config.evento);
   const upsert = useStore((s) => s.upsertAtletas);
   const { mostrar, Toast } = useToast();
   const [carregando, setCarregando] = useState(false);
@@ -62,11 +63,21 @@ export default function Painel() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl text-marca-vermelho">Painel</h1>
-        <Link to="/importar" className="btn-fantasma text-sm px-3">
-          Importar
-        </Link>
+      <div className="rounded-2xl bg-marca-grad text-white shadow-forte p-4 mb-4">
+        <div className="eyebrow text-marca-dourado/90">Painel do dia</div>
+        <h1 className="text-2xl font-display font-bold leading-tight mt-0.5">{evento.nome}</h1>
+        <div className="text-sm text-white/80 mt-0.5">
+          {evento.local}
+          {evento.data ? ` · ${evento.data}` : ''}
+        </div>
+        <div className="flex gap-2 mt-3">
+          <Link to="/importar" className="btn bg-white/15 text-white text-sm px-3 min-h-[38px] hover:bg-white/25">
+            Importar / adicionar
+          </Link>
+          <Link to="/atletas" className="btn bg-marca-dourado text-marca-texto text-sm px-3 min-h-[38px]">
+            Atletas
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-3 gap-3 mb-4">

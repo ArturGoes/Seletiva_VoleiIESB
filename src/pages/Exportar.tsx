@@ -9,15 +9,30 @@ import {
 } from '../lib/export';
 import { Confirmar, useToast } from '../components/ui';
 import { CATEGORIAS_REAIS, CATEGORIA_LABEL } from '../types';
-import { notaFinalAtleta } from '../lib/scoring';
+import { foiAvaliado, notaFinalAtleta } from '../lib/scoring';
+import { gerarCardAtleta, baixarBlob, linkWhatsAppTexto, resumoTextoGeral } from '../lib/whatsapp';
 
 export default function Exportar() {
   const store = useStore();
   const { mostrar, Toast } = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
   const [confirmRestore, setConfirmRestore] = useState<string | null>(null);
+  const [gerando, setGerando] = useState('');
 
   const atletas = Object.values(store.atletas);
+  const avaliados = atletas.filter((a) => foiAvaliado(a.avaliacao));
+
+  async function baixarTodosCards() {
+    const alvo = avaliados.length ? avaliados : atletas;
+    for (let i = 0; i < alvo.length; i++) {
+      setGerando(`Gerando cards… ${i + 1}/${alvo.length}`);
+      const { blob } = await gerarCardAtleta(alvo[i], store.config);
+      baixarBlob(`card_${String(i + 1).padStart(2, '0')}_${slugNome(alvo[i].nome)}.png`, blob);
+      await new Promise((r) => setTimeout(r, 350));
+    }
+    setGerando('');
+    mostrar(`${alvo.length} cards baixados`);
+  }
 
   function estadoAtual() {
     return {
@@ -58,6 +73,25 @@ export default function Exportar() {
       <p className="text-sm text-marca-texto/60 mb-5">
         {atletas.length} atletas · {atletas.filter((a) => a.presente).length} presentes
       </p>
+
+      <Grupo titulo="Enviar para o WhatsApp">
+        <Acao
+          titulo="Enviar resumo geral (texto)"
+          desc={
+            store.config.evento.whatsappOrganizador
+              ? 'Abre sua conversa no WhatsApp com o ranking em texto.'
+              : 'Configure “Meu WhatsApp” em Configurações para ir direto ao seu número.'
+          }
+          onClick={() => window.open(linkWhatsAppTexto(store.config, resumoTextoGeral(atletas, store.config)), '_blank')}
+        />
+        <Acao
+          titulo={gerando || 'Baixar todos os cards (imagens)'}
+          desc="Gera um card por atleta (foto + notas + fases) para você anexar/enviar no WhatsApp."
+          onClick={() => {
+            if (!gerando) baixarTodosCards();
+          }}
+        />
+      </Grupo>
 
       <Grupo titulo="Resultados">
         <Acao
@@ -183,6 +217,15 @@ function gerarResumoHTML(store: ReturnType<typeof useStore.getState>): string {
   ${secoes}
   <p style="margin-top:32px;color:#999;font-size:12px">Gerado pelo app da Seletiva IESB.</p>
   </body></html>`;
+}
+
+function slugNome(s: string): string {
+  return s
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-zA-Z0-9]+/g, '_')
+    .replace(/^_|_$/g, '')
+    .toLowerCase();
 }
 
 function escapar(s: string): string {
