@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-marca-fundo text-marca-texto font-corpo antialiased;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
+  }
+  h1,
+  h2,
+  h3,
+  .titulo {
+    @apply font-titulo uppercase tracking-wide;
+  }
+  /* Área segura para notch em celulares */
+  .safe-bottom {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
+  }
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white rounded-2xl shadow-card border border-marca-dourado/30;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 min-h-[44px] font-semibold
+      transition active:scale-[0.98] select-none;
+  }
+  .btn-primario {
+    @apply btn bg-marca-vermelho text-white shadow-sm hover:bg-marca-escuro;
+  }
+  .btn-dourado {
+    @apply btn bg-marca-dourado text-marca-texto hover:brightness-95;
+  }
+  .btn-fantasma {
+    @apply btn bg-white text-marca-texto border border-marca-dourado/50 hover:bg-marca-dourado/10;
+  }
+  .btn-perigo {
+    @apply btn bg-white text-marca-vermelho border border-marca-vermelho/40 hover:bg-marca-vermelho/10;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold;
+  }
+  .campo {
+    @apply w-full rounded-xl border border-marca-dourado/40 bg-white px-3 py-2.5 text-base
+      outline-none focus:border-marca-vermelho focus:ring-2 focus:ring-marca-vermelho/20;
+  }
+  .rotulo {
+    @apply block text-sm font-semibold text-marca-texto/70 mb-1;
+  }
+  .hairline {
+    @apply border-b border-marca-dourado/30;
+  }
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Barra de rolagem discreta */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(124, 14, 30, 0.25);
+  border-radius: 999px;
+}

@@ -1,0 +1,198 @@
+import { useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useStore } from '../store/useStore';
+import {
+  type CampoAtleta,
+  CAMPOS,
+  linhasParaAtletas,
+  parseCSV,
+  sugerirMapeamento,
+  type ResultadoParse
+} from '../lib/csv';
+import { gerarSeed } from '../lib/seed';
+import { useToast } from '../components/ui';
+
+const OPCOES_CAMPO: [CampoAtleta, string][] = [
+  ['ignorar', '— Ignorar —'],
+  ...CAMPOS.map((c) => [c.campo, c.label] as [CampoAtleta, string])
+];
+
+export default function Importar() {
+  const nav = useNavigate();
+  const upsert = useStore((s) => s.upsertAtletas);
+  const addManual = useStore((s) => s.addAtletaManual);
+  const { mostrar, Toast } = useToast();
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const [parsed, setParsed] = useState<ResultadoParse | null>(null);
+  const [mapa, setMapa] = useState<Record<string, CampoAtleta>>({});
+  const [manual, setManual] = useState(false);
+
+  async function onArquivo(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const texto = await file.text();
+    const res = await parseCSV(texto);
+    setParsed(res);
+    setMapa(sugerirMapeamento(res.cabecalhos));
+    e.target.value = '';
+  }
+
+  function confirmarImportacao() {
+    if (!parsed) return;
+    const atletas = linhasParaAtletas(parsed.linhas, mapa);
+    const r = upsert(atletas);
+    mostrar(`${r.adicionados} novos · ${r.atualizados} atualizados`);
+    setParsed(null);
+    setTimeout(() => nav('/atletas'), 900);
+  }
+
+  return (
+    <div>
+      <button onClick={() => nav(-1)} className="text-sm text-marca-vermelho font-semibold mb-3">
+        ← Voltar
+      </button>
+      <h1 className="text-2xl text-marca-vermelho mb-4">Importar atletas</h1>
+
+      {!parsed && !manual && (
+        <>
+          <div className="card p-5 mb-4 text-center">
+            <div className="text-4xl mb-2">📄</div>
+            <h2 className="text-lg mb-1">Planilha do Google Forms</h2>
+            <p className="text-sm text-marca-texto/60 mb-4">
+              Exporte a planilha de respostas como <b>CSV</b> e selecione o arquivo. As colunas são
+              reconhecidas automaticamente.
+            </p>
+            <button className="btn-primario w-full" onClick={() => fileRef.current?.click()}>
+              Selecionar arquivo CSV
+            </button>
+            <input ref={fileRef} type="file" accept=".csv,text/csv" className="hidden" onChange={onArquivo} />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <button className="btn-fantasma" onClick={() => setManual(true)}>
+              + Atleta manual
+            </button>
+            <button
+              className="btn-fantasma"
+              onClick={() => {
+                const r = upsert(gerarSeed());
+                mostrar(`${r.adicionados} de exemplo`);
+                setTimeout(() => nav('/atletas'), 900);
+              }}
+            >
+              Dados de exemplo
+            </button>
+          </div>
+        </>
+      )}
+
+      {parsed && (
+        <div>
+          <div className="card p-4 mb-4">
+            <h2 className="text-sm text-marca-texto/50 mb-1">Conferir colunas</h2>
+            <p className="text-xs text-marca-texto/50 mb-3">
+              {parsed.linhas.length} linhas. Ajuste se alguma coluna não bateu. Deduplicamos por e-mail/WhatsApp e
+              preservamos avaliações já feitas.
+            </p>
+            <div className="flex flex-col gap-2">
+              {parsed.cabecalhos.map((cab) => (
+                <div key={cab} className="flex items-center gap-2">
+                  <div className="flex-1 min-w-0 text-sm truncate" title={cab}>
+                    {cab}
+                    <div className="text-[11px] text-marca-texto/40 truncate">
+                      {(parsed.linhas[0]?.[cab] || '').slice(0, 40) || '—'}
+                    </div>
+                  </div>
+                  <span className="text-marca-texto/30">→</span>
+                  <select
+                    value={mapa[cab] || 'ignorar'}
+                    onChange={(e) => setMapa((m) => ({ ...m, [cab]: e.target.value as CampoAtleta }))}
+                    className="campo py-1.5 w-40 text-sm"
+                  >
+                    {OPCOES_CAMPO.map(([v, l]) => (
+                      <option key={v} value={v}>
+                        {l}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button className="btn-fantasma flex-1" onClick={() => setParsed(null)}>
+              Cancelar
+            </button>
+            <button className="btn-primario flex-1" onClick={confirmarImportacao}>
+              Importar {parsed.linhas.length}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {manual && (
+        <FormManual
+          onCancelar={() => setManual(false)}
+          onSalvar={(dados) => {
+            addManual(dados);
+            mostrar('Atleta adicionado');
+            setManual(false);
+            setTimeout(() => nav('/atletas'), 600);
+          }}
+        />
+      )}
+      <Toast />
+    </div>
+  );
+}
+
+function FormManual({
+  onSalvar,
+  onCancelar
+}: {
+  onSalvar: (d: { nome: string; whatsapp: string; curso: string; funcaoPreferida: string; presente: boolean }) => void;
+  onCancelar: () => void;
+}) {
+  const [nome, setNome] = useState('');
+  const [whatsapp, setWhatsapp] = useState('');
+  const [curso, setCurso] = useState('');
+  const [funcao, setFuncao] = useState('');
+  const [presente, setPresente] = useState(true);
+
+  return (
+    <div className="card p-4">
+      <h2 className="text-lg mb-3">Atleta manual (walk-in)</h2>
+      <label className="rotulo">Nome *</label>
+      <input className="campo mb-3" value={nome} onChange={(e) => setNome(e.target.value)} autoFocus />
+      <label className="rotulo">WhatsApp</label>
+      <input className="campo mb-3" inputMode="tel" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} />
+      <div className="grid grid-cols-2 gap-3 mb-3">
+        <div>
+          <label className="rotulo">Curso</label>
+          <input className="campo" value={curso} onChange={(e) => setCurso(e.target.value)} />
+        </div>
+        <div>
+          <label className="rotulo">Função</label>
+          <input className="campo" value={funcao} onChange={(e) => setFuncao(e.target.value)} />
+        </div>
+      </div>
+      <label className="flex items-center gap-2 mb-4 text-sm">
+        <input type="checkbox" checked={presente} onChange={(e) => setPresente(e.target.checked)} className="w-4 h-4 accent-marca-vermelho" />
+        Já fazer check-in (presente)
+      </label>
+      <div className="flex gap-2">
+        <button className="btn-fantasma flex-1" onClick={onCancelar}>
+          Cancelar
+        </button>
+        <button
+          className="btn-primario flex-1 disabled:opacity-40"
+          disabled={!nome.trim()}
+          onClick={() => onSalvar({ nome: nome.trim(), whatsapp, curso, funcaoPreferida: funcao, presente })}
+        >
+          Adicionar
+        </button>
+      </div>
+    </div>
+  );
+}
