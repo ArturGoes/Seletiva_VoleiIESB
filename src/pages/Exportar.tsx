@@ -11,6 +11,7 @@ import { Confirmar, useToast } from '../components/ui';
 import { CATEGORIAS_REAIS, CATEGORIA_LABEL } from '../types';
 import { foiAvaliado, notaFinalAtleta } from '../lib/scoring';
 import { gerarCardAtleta, baixarBlob, linkWhatsAppTexto, resumoTextoGeral } from '../lib/whatsapp';
+import { compartilharJSON, exportarAvaliacoes, exportarRoster } from '../lib/sync';
 
 export default function Exportar() {
   const store = useStore();
@@ -73,6 +74,40 @@ export default function Exportar() {
       <p className="text-sm text-marca-texto/60 mb-5">
         {atletas.length} atletas · {atletas.filter((a) => a.presente).length} presentes
       </p>
+
+      <Grupo titulo="Trabalho em equipe (vários avaliadores)">
+        <Acao
+          titulo="Compartilhar lista de atletas"
+          desc="Envie para os avaliadores. Eles abrem no app deles em Importar → Carregar lista compartilhada."
+          onClick={async () => {
+            const r = await compartilharJSON(
+              `lista_atletas_${store.config.evento.nome ? '' : ''}seletiva.json`,
+              exportarRoster(estadoAtual()),
+              'Lista de atletas da Seletiva IESB — abra no app em Importar → Carregar lista compartilhada.',
+              store.config
+            );
+            mostrar(r === 'compartilhado' ? 'Lista compartilhada!' : 'Lista baixada + WhatsApp aberto');
+          }}
+        />
+        <Acao
+          titulo="Enviar MINHAS avaliações ao organizador"
+          desc="Gera um arquivo só com o que você avaliou neste aparelho, para o organizador juntar no aparelho central."
+          onClick={async () => {
+            const pacote = exportarAvaliacoes(estadoAtual());
+            if (pacote.itens.length === 0) {
+              mostrar('Você ainda não avaliou ninguém neste aparelho.');
+              return;
+            }
+            const r = await compartilharJSON(
+              `avaliacoes_${(store.config.avaliador || 'avaliador').replace(/\s+/g, '_')}.json`,
+              JSON.stringify(pacote),
+              `Avaliações de ${pacote.avaliador} — ${pacote.itens.length} atleta(s). Seletiva IESB.`,
+              store.config
+            );
+            mostrar(r === 'compartilhado' ? `${pacote.itens.length} avaliações enviadas!` : 'Arquivo baixado + WhatsApp aberto');
+          }}
+        />
+      </Grupo>
 
       <Grupo titulo="Enviar para o WhatsApp">
         <Acao

@@ -50,11 +50,18 @@ export default function Configuracoes() {
         </div>
         <label className="rotulo">Meu WhatsApp (para receber os dados)</label>
         <input
-          className="campo"
+          className="campo mb-3"
           inputMode="tel"
           value={config.evento.whatsappOrganizador}
           onChange={(e) => setEvento({ whatsappOrganizador: e.target.value })}
           placeholder="ex: 61999998888"
+        />
+        <label className="rotulo">Seu nome (avaliador neste aparelho)</label>
+        <input
+          className="campo"
+          value={config.avaliador}
+          onChange={(e) => setConfig({ avaliador: e.target.value })}
+          placeholder="ex: João (usado ao enviar suas avaliações)"
         />
         <p className="text-xs text-marca-texto/50 mt-1">
           Usado quando o envio cai no modo texto (wa.me). No celular, o botão “Enviar para o WhatsApp” compartilha o card com foto.

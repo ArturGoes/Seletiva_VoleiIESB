@@ -63,6 +63,21 @@ localmente. O `base` já está configurado como relativo (`./`), então funciona
 5. Use **Próximo →** para avaliar em sequência, ou **pular para o próximo que falta avaliar**.
 6. Os **pesos**, a **escala**, as **fases** e as **vagas** são editáveis em **Configurações**.
 
+## 👥 Vários avaliadores (seu celular = central)
+
+O app guarda os dados **em cada aparelho** (offline, sem servidor). Para trabalhar em equipe sem
+sincronização em nuvem, o fluxo é:
+
+1. **Você (central):** importe a lista (CSV) e, em **Exportar → Compartilhar lista de atletas**, mande
+   o arquivo para cada avaliador (WhatsApp/arquivo).
+2. **Cada avaliador:** abre o app no próprio celular → **Importar → Carregar lista compartilhada**,
+   põe o nome dele em **Configurações → Seu nome (avaliador)** e avalia os atletas/fases.
+3. **Cada avaliador:** em **Exportar → Enviar MINHAS avaliações ao organizador**, manda o arquivo pra você.
+4. **Você (central):** **Importar → Receber avaliações de um avaliador** e o app **junta** tudo no seu,
+   casando por e-mail/ID (preenche o que estiver vazio e registra quem avaliou; não apaga o que já existe).
+
+> Cada avaliador vê só a lista dele; quem consolida o resultado final é o **aparelho central**.
+
 ## 📲 Enviar os dados para o seu WhatsApp
 
 1. Em **Configurações → Evento & envio**, coloque o **seu número de WhatsApp** (para o modo texto).

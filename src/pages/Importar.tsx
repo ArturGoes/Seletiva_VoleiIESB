@@ -10,7 +10,8 @@ import {
   type ResultadoParse
 } from '../lib/csv';
 import { gerarSeed } from '../lib/seed';
-import { useToast } from '../components/ui';
+import { lerAvaliacoes, lerRoster, mesclarAvaliacoes } from '../lib/sync';
+import { Confirmar, useToast } from '../components/ui';
 
 const OPCOES_CAMPO: [CampoAtleta, string][] = [
   ['ignorar', '— Ignorar —'],
@@ -21,12 +22,42 @@ export default function Importar() {
   const nav = useNavigate();
   const upsert = useStore((s) => s.upsertAtletas);
   const addManual = useStore((s) => s.addAtletaManual);
+  const carregarEstado = useStore((s) => s.carregarEstado);
+  const mesclarAtletas = useStore((s) => s.mesclarAtletas);
   const { mostrar, Toast } = useToast();
   const fileRef = useRef<HTMLInputElement>(null);
+  const rosterRef = useRef<HTMLInputElement>(null);
+  const avalRef = useRef<HTMLInputElement>(null);
 
   const [parsed, setParsed] = useState<ResultadoParse | null>(null);
   const [mapa, setMapa] = useState<Record<string, CampoAtleta>>({});
   const [manual, setManual] = useState(false);
+  const [confirmRoster, setConfirmRoster] = useState<string | null>(null);
+
+  async function onRoster(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setConfirmRoster(await file.text());
+    e.target.value = '';
+  }
+
+  async function onAvaliacoes(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const pacote = lerAvaliacoes(await file.text());
+      const atual = useStore.getState().atletas;
+      const { atletas, resumo } = mesclarAvaliacoes(atual, pacote, { substituir: false });
+      mesclarAtletas(atletas);
+      mostrar(
+        `De ${pacote.avaliador}: ${resumo.atletasAtualizados} atualizados · ${resumo.notasNovas} notas · ${resumo.fasesAplicadas} fases` +
+          (resumo.naoEncontrados ? ` · ${resumo.naoEncontrados} não encontrados` : '')
+      );
+    } catch (err) {
+      mostrar('Falha: ' + (err as Error).message);
+    }
+    e.target.value = '';
+  }
 
   async function onArquivo(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -69,7 +100,7 @@ export default function Importar() {
             <input ref={fileRef} type="file" accept=".csv,text/csv" className="hidden" onChange={onArquivo} />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 mb-6">
             <button className="btn-fantasma" onClick={() => setManual(true)}>
               + Atleta manual
             </button>
@@ -84,8 +115,57 @@ export default function Importar() {
               Dados de exemplo
             </button>
           </div>
+
+          <h2 className="text-sm text-marca-texto/50 mb-2">Trabalho em equipe</h2>
+          <div className="card divide-y divide-marca-dourado/20 mb-3">
+            <button
+              className="w-full text-left p-4 active:bg-marca-dourado/10"
+              onClick={() => rosterRef.current?.click()}
+            >
+              <div className="font-semibold">📋 Carregar lista compartilhada</div>
+              <div className="text-xs text-marca-texto/50 mt-0.5">
+                Para avaliadores: abre a lista de atletas enviada pelo organizador (substitui os dados deste aparelho).
+              </div>
+            </button>
+            <button
+              className="w-full text-left p-4 active:bg-marca-dourado/10"
+              onClick={() => avalRef.current?.click()}
+            >
+              <div className="font-semibold">📥 Receber avaliações de um avaliador</div>
+              <div className="text-xs text-marca-texto/50 mt-0.5">
+                Para o organizador: junta ao aparelho central o arquivo de avaliações enviado por um amigo.
+              </div>
+            </button>
+          </div>
+          <input ref={rosterRef} type="file" accept="application/json,.json" className="hidden" onChange={onRoster} />
+          <input ref={avalRef} type="file" accept="application/json,.json" className="hidden" onChange={onAvaliacoes} />
         </>
       )}
+
+      <Confirmar
+        aberto={!!confirmRoster}
+        titulo="Carregar lista compartilhada?"
+        mensagem="Isto substitui os atletas e configurações deste aparelho pela lista recebida. Use no celular do avaliador antes de começar."
+        textoConfirmar="Carregar"
+        onCancelar={() => setConfirmRoster(null)}
+        onConfirmar={() => {
+          try {
+            const pacote = lerRoster(confirmRoster!);
+            carregarEstado({
+              atletas: Object.fromEntries(pacote.atletas.map((a) => [a.id, a])),
+              config: pacote.config,
+              grupos: [],
+              cronograma: [],
+              proximaOrdemChegada: 1
+            });
+            mostrar(`${pacote.atletas.length} atletas carregados`);
+            setTimeout(() => nav('/atletas'), 900);
+          } catch (err) {
+            mostrar('Falha: ' + (err as Error).message);
+          }
+          setConfirmRoster(null);
+        }}
+      />
 
       {parsed && (
         <div>

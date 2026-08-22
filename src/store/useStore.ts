@@ -58,6 +58,7 @@ interface Acoes {
   resetCronograma: () => void;
   // Global
   carregarEstado: (estado: EstadoApp) => void;
+  mesclarAtletas: (atletas: Record<string, Atleta>) => void;
   limparTudo: () => void;
 }
 
@@ -319,6 +320,8 @@ export const useStore = create<Store>()(
 
       carregarEstado: (estado) => set(() => normalizarEstado(estado)),
 
+      mesclarAtletas: (atletas) => set(() => ({ atletas })),
+
       limparTudo: () => set(() => estadoInicial())
     }),
     {
@@ -346,7 +349,8 @@ function normalizarEstado(estado: Partial<EstadoApp> | undefined): EstadoApp {
     pesos: { ...padrao.pesos, ...(estado?.config?.pesos || {}) },
     vagas: { ...padrao.vagas, ...(estado?.config?.vagas || {}) },
     fases: estado?.config?.fases?.length ? estado.config.fases : padrao.fases,
-    evento: { ...padrao.evento, ...(estado?.config?.evento || {}) }
+    evento: { ...padrao.evento, ...(estado?.config?.evento || {}) },
+    avaliador: estado?.config?.avaliador || ''
   };
   const atletasIn = estado?.atletas || {};
   const atletas: Record<string, Atleta> = {};

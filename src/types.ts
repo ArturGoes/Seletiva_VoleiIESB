@@ -115,6 +115,7 @@ export interface Config {
   vagas: Record<Exclude<Categoria, 'indefinido'>, VagasCategoria>;
   fases: FaseDef[];
   evento: Evento;
+  avaliador: string; // nome de quem usa este aparelho (avaliador)
 }
 
 export interface Grupo {
@@ -249,6 +250,7 @@ export function configPadrao(): Config {
       quarteto_misto: { titulares: 4, reservas: 2 }
     },
     fases: FASES_PADRAO.map((f) => ({ ...f })),
-    evento: eventoPadrao()
+    evento: eventoPadrao(),
+    avaliador: ''
   };
 }
