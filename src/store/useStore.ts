@@ -376,23 +376,35 @@ export function normalizarZap(zap: string | undefined): string {
 }
 
 export function cronogramaSugerido(): EstacaoCronograma[] {
-  const base: Omit<EstacaoCronograma, 'id' | 'periodo'>[] = [
-    { horario: '08:00', titulo: 'Recepção e check-in', bloco: 'aquecimento', duracaoMin: 30 },
-    { horario: '08:30', titulo: 'Aquecimento na areia', bloco: 'aquecimento', duracaoMin: 20 },
-    { horario: '08:50', titulo: 'Saque e recepção', bloco: 'tecnico', duracaoMin: 30 },
-    { horario: '09:20', titulo: 'Levantamento e ataque', bloco: 'tecnico', duracaoMin: 30 },
-    { horario: '09:50', titulo: 'Defesa e bloqueio', bloco: 'tecnico', duracaoMin: 25 },
-    { horario: '10:15', titulo: 'Testes físicos (deslocamento/impulsão)', bloco: 'fisico', duracaoMin: 20 },
-    { horario: '10:35', titulo: 'Jogos avaliativos', bloco: 'jogo', duracaoMin: 55 }
+  // Janelas: manhã 9:30–11:30 e tarde 14:00–16:00 (120 min cada).
+  const base: Omit<EstacaoCronograma, 'id' | 'periodo' | 'horario'>[] = [
+    { titulo: 'Recepção e check-in', bloco: 'aquecimento', duracaoMin: 15 },
+    { titulo: 'Aquecimento na areia', bloco: 'aquecimento', duracaoMin: 15 },
+    { titulo: 'Saque e recepção', bloco: 'tecnico', duracaoMin: 20 },
+    { titulo: 'Levantamento e ataque', bloco: 'tecnico', duracaoMin: 20 },
+    { titulo: 'Defesa e bloqueio', bloco: 'tecnico', duracaoMin: 15 },
+    { titulo: 'Testes físicos (deslocamento/impulsão)', bloco: 'fisico', duracaoMin: 15 },
+    { titulo: 'Jogos avaliativos', bloco: 'jogo', duracaoMin: 20 }
   ];
-  const manha = base.map((b) => ({ ...b, id: uid('e'), periodo: 'manha' as Periodo }));
-  const tarde = base.map((b, i) => ({
-    ...b,
-    id: uid('e'),
-    periodo: 'tarde' as Periodo,
-    horario: ['13:30', '14:00', '14:20', '14:50', '15:20', '15:45', '16:05'][i] || b.horario
-  }));
-  return [...manha, ...tarde];
+  const comHorarios = (inicio: string, periodo: Periodo) => {
+    let min = paraMinutos(inicio);
+    return base.map((b) => {
+      const estacao = { ...b, id: uid('e'), periodo, horario: paraHHMM(min) };
+      min += b.duracaoMin;
+      return estacao;
+    });
+  };
+  return [...comHorarios('09:30', 'manha'), ...comHorarios('14:00', 'tarde')];
+}
+
+function paraMinutos(hhmm: string): number {
+  const [h, m] = hhmm.split(':').map(Number);
+  return h * 60 + m;
+}
+function paraHHMM(min: number): string {
+  const h = Math.floor(min / 60) % 24;
+  const m = min % 60;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 }
 
 // Seletores utilitários
