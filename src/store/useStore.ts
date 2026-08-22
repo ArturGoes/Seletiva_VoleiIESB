@@ -352,7 +352,8 @@ function normalizarEstado(estado: Partial<EstadoApp> | undefined): EstadoApp {
     evento: { ...padrao.evento, ...(estado?.config?.evento || {}) },
     avaliador: estado?.config?.avaliador || '',
     aparelho: estado?.config?.aparelho || '',
-    central: estado?.config?.central ?? false
+    central: estado?.config?.central ?? false,
+    centralDefinidoPor: estado?.config?.centralDefinidoPor || ''
   };
   const atletasIn = estado?.atletas || {};
   const atletas: Record<string, Atleta> = {};

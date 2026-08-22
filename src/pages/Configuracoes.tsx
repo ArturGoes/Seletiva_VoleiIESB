@@ -43,27 +43,44 @@ export default function Configuracoes() {
           onChange={(e) => setConfig({ aparelho: e.target.value })}
           placeholder="ex: POCO X4"
         />
-        <button
-          onClick={() => setConfig({ central: !config.central })}
-          className={`w-full btn min-h-[52px] justify-between px-4 ${
-            config.central ? 'bg-marca-vermelho text-white' : 'bg-white border border-black/10 text-marca-texto'
-          }`}
-        >
-          <span className="text-left leading-tight">
-            <span className="block font-semibold">Aparelho central (organizador)</span>
-            <span className={`block text-xs font-normal ${config.central ? 'text-white/80' : 'text-marca-texto/50'}`}>
-              {config.central ? 'Este aparelho consolida as avaliações' : 'Marque se este é o seu aparelho principal'}
-            </span>
-          </span>
-          <span className={`shrink-0 w-12 h-7 rounded-full flex items-center transition ${config.central ? 'bg-white/30' : 'bg-black/10'}`}>
-            <span className={`w-6 h-6 rounded-full bg-white shadow transition-transform ${config.central ? 'translate-x-5' : 'translate-x-0.5'}`} />
-          </span>
-        </button>
-        {config.central && (
-          <p className="text-xs text-marca-texto/50 mt-2">
-            No aparelho central você <b>compartilha a lista</b> e <b>recebe/junta</b> as avaliações dos outros.
-            Os avaliadores deixam esta opção desmarcada.
-          </p>
+        {!config.central && config.centralDefinidoPor ? (
+          <div className="rounded-xl border border-black/10 bg-marca-dourado/10 p-3">
+            <div className="font-semibold text-sm">★ Central já definido: {config.centralDefinidoPor}</div>
+            <div className="text-xs text-marca-texto/60 mt-0.5">
+              Este aparelho é <b>avaliador</b>. Ao terminar, envie suas avaliações ao central.
+            </div>
+            <button
+              className="text-xs text-marca-texto/40 underline mt-2"
+              onClick={() => setConfig({ central: true, centralDefinidoPor: '' })}
+            >
+              Tornar ESTE o aparelho central
+            </button>
+          </div>
+        ) : (
+          <>
+            <button
+              onClick={() => setConfig({ central: !config.central, centralDefinidoPor: '' })}
+              className={`w-full btn min-h-[52px] justify-between px-4 ${
+                config.central ? 'bg-marca-vermelho text-white' : 'bg-white border border-black/10 text-marca-texto'
+              }`}
+            >
+              <span className="text-left leading-tight">
+                <span className="block font-semibold">Aparelho central (organizador)</span>
+                <span className={`block text-xs font-normal ${config.central ? 'text-white/80' : 'text-marca-texto/50'}`}>
+                  {config.central ? 'Este aparelho consolida as avaliações' : 'Marque se este é o seu aparelho principal'}
+                </span>
+              </span>
+              <span className={`shrink-0 w-12 h-7 rounded-full flex items-center transition ${config.central ? 'bg-white/30' : 'bg-black/10'}`}>
+                <span className={`w-6 h-6 rounded-full bg-white shadow transition-transform ${config.central ? 'translate-x-5' : 'translate-x-0.5'}`} />
+              </span>
+            </button>
+            {config.central && (
+              <p className="text-xs text-marca-texto/50 mt-2">
+                No aparelho central você <b>compartilha a lista</b> e <b>recebe/junta</b> as avaliações dos outros.
+                Ao compartilhar a lista, os outros aparelhos passam a mostrar “Central já definido” e escondem esta opção.
+              </p>
+            )}
+          </>
         )}
       </div>
 

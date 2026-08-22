@@ -151,9 +151,28 @@ export default function Importar() {
         onConfirmar={() => {
           try {
             const pacote = lerRoster(confirmRoster!);
+            const meu = useStore.getState().config;
+            // Quem carrega a lista entra como AVALIADOR: herda os ajustes do evento,
+            // mas mantém a própria identidade e NÃO vira central.
+            const config = {
+              ...meu,
+              pesos: pacote.config.pesos,
+              escalaMax: pacote.config.escalaMax,
+              vagas: pacote.config.vagas,
+              fases: pacote.config.fases,
+              evento: {
+                ...meu.evento,
+                nome: pacote.config.evento.nome,
+                local: pacote.config.evento.local,
+                data: pacote.config.evento.data,
+                whatsappOrganizador: pacote.config.evento.whatsappOrganizador || meu.evento.whatsappOrganizador
+              },
+              central: false,
+              centralDefinidoPor: pacote.centralAparelho || meu.centralDefinidoPor
+            };
             carregarEstado({
               atletas: Object.fromEntries(pacote.atletas.map((a) => [a.id, a])),
-              config: pacote.config,
+              config,
               grupos: [],
               cronograma: [],
               proximaOrdemChegada: 1
