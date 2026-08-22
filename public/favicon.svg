@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="75%">
+      <stop offset="0%" stop-color="#C8102E"/>
+      <stop offset="100%" stop-color="#5E0A15"/>
+    </radialGradient>
+  </defs>
+  <rect width="100" height="100" rx="22" fill="url(#bg)"/>
+  <circle cx="50" cy="50" r="34" fill="#7C0E1E" stroke="#E9C169" stroke-width="3"/>
+  <g fill="#fff">
+    <path d="M34 30 h32 v6 l-32 12 z"/>
+    <rect x="34" y="30" width="9" height="30"/>
+    <text x="50" y="66" font-family="Arial Black, Arial, sans-serif" font-size="16" font-weight="900" fill="#fff" text-anchor="middle">IESB</text>
+  </g>
+</svg>
