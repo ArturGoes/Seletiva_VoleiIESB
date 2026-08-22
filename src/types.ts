@@ -116,6 +116,8 @@ export interface Config {
   fases: FaseDef[];
   evento: Evento;
   avaliador: string; // nome de quem usa este aparelho (avaliador)
+  aparelho: string; // apelido deste aparelho (ex.: "POCO X4")
+  central: boolean; // este é o aparelho central (organizador que consolida tudo)
 }
 
 export interface Grupo {
@@ -251,6 +253,8 @@ export function configPadrao(): Config {
     },
     fases: FASES_PADRAO.map((f) => ({ ...f })),
     evento: eventoPadrao(),
-    avaliador: ''
+    avaliador: '',
+    aparelho: '',
+    central: false
   };
 }

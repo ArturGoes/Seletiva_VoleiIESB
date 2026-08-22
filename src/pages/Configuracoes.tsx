@@ -34,6 +34,39 @@ export default function Configuracoes() {
       </button>
       <h1 className="text-2xl text-marca-vermelho mb-4">Configurações</h1>
 
+      <div className={`card p-4 mb-4 ${config.central ? 'border-2 border-marca-vermelho' : ''}`}>
+        <h2 className="text-sm text-marca-texto/50 mb-3">Este aparelho</h2>
+        <label className="rotulo">Apelido do aparelho</label>
+        <input
+          className="campo mb-3"
+          value={config.aparelho}
+          onChange={(e) => setConfig({ aparelho: e.target.value })}
+          placeholder="ex: POCO X4"
+        />
+        <button
+          onClick={() => setConfig({ central: !config.central })}
+          className={`w-full btn min-h-[52px] justify-between px-4 ${
+            config.central ? 'bg-marca-vermelho text-white' : 'bg-white border border-black/10 text-marca-texto'
+          }`}
+        >
+          <span className="text-left leading-tight">
+            <span className="block font-semibold">Aparelho central (organizador)</span>
+            <span className={`block text-xs font-normal ${config.central ? 'text-white/80' : 'text-marca-texto/50'}`}>
+              {config.central ? 'Este aparelho consolida as avaliações' : 'Marque se este é o seu aparelho principal'}
+            </span>
+          </span>
+          <span className={`shrink-0 w-12 h-7 rounded-full flex items-center transition ${config.central ? 'bg-white/30' : 'bg-black/10'}`}>
+            <span className={`w-6 h-6 rounded-full bg-white shadow transition-transform ${config.central ? 'translate-x-5' : 'translate-x-0.5'}`} />
+          </span>
+        </button>
+        {config.central && (
+          <p className="text-xs text-marca-texto/50 mt-2">
+            No aparelho central você <b>compartilha a lista</b> e <b>recebe/junta</b> as avaliações dos outros.
+            Os avaliadores deixam esta opção desmarcada.
+          </p>
+        )}
+      </div>
+
       <div className="card p-4 mb-4">
         <h2 className="text-sm text-marca-texto/50 mb-3">Evento & envio</h2>
         <label className="rotulo">Nome do evento</label>

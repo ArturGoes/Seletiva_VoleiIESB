@@ -350,7 +350,9 @@ function normalizarEstado(estado: Partial<EstadoApp> | undefined): EstadoApp {
     vagas: { ...padrao.vagas, ...(estado?.config?.vagas || {}) },
     fases: estado?.config?.fases?.length ? estado.config.fases : padrao.fases,
     evento: { ...padrao.evento, ...(estado?.config?.evento || {}) },
-    avaliador: estado?.config?.avaliador || ''
+    avaliador: estado?.config?.avaliador || '',
+    aparelho: estado?.config?.aparelho || '',
+    central: estado?.config?.central ?? false
   };
   const atletasIn = estado?.atletas || {};
   const atletas: Record<string, Atleta> = {};
