@@ -7,7 +7,6 @@ on:
   push:
     branches:
       - main
-      - claude/iesb-volleyball-app-wcqs4i
   workflow_dispatch:
 
 permissions:

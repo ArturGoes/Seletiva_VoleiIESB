@@ -71,9 +71,17 @@ export default function Exportar() {
   return (
     <div>
       <h1 className="text-2xl text-marca-vermelho mb-1">Exportar & Backup</h1>
-      <p className="text-sm text-marca-texto/60 mb-5">
+      <p className="text-sm text-marca-texto/60 mb-3">
         {atletas.length} atletas · {atletas.filter((a) => a.presente).length} presentes
       </p>
+
+      <div className={`card-ouro p-3 mb-4 text-sm ${store.config.central ? '' : 'bg-marca-dourado/10'}`}>
+        {store.config.central ? (
+          <>★ <b>Aparelho central.</b> Use <b>Compartilhar lista de atletas</b> para enviar aos avaliadores; depois junte tudo em <b>Importar → Receber avaliações</b>.</>
+        ) : (
+          <>Você é <b>avaliador</b>. Quando terminar, use <b>Enviar MINHAS avaliações ao organizador</b> para mandar ao aparelho central.</>
+        )}
+      </div>
 
       <Grupo titulo="Trabalho em equipe (vários avaliadores)">
         <Acao

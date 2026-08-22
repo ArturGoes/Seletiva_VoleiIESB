@@ -9,6 +9,8 @@ import { CategoriaChip, ProgressBar, Stat, useToast } from '../components/ui';
 export default function Painel() {
   const atletas = useStore((s) => Object.values(s.atletas));
   const evento = useStore((s) => s.config.evento);
+  const central = useStore((s) => s.config.central);
+  const aparelho = useStore((s) => s.config.aparelho);
   const upsert = useStore((s) => s.upsertAtletas);
   const { mostrar, Toast } = useToast();
   const [carregando, setCarregando] = useState(false);
@@ -64,7 +66,14 @@ export default function Painel() {
   return (
     <div>
       <div className="rounded-2xl bg-marca-grad text-white shadow-forte p-4 mb-4">
-        <div className="eyebrow text-marca-dourado/90">Painel do dia</div>
+        <div className="flex items-center justify-between gap-2">
+          <div className="eyebrow text-marca-dourado/90">Painel do dia</div>
+          {central ? (
+            <span className="chip bg-marca-dourado text-marca-texto">★ Central{aparelho ? ` · ${aparelho}` : ''}</span>
+          ) : (
+            aparelho && <span className="chip bg-white/15 text-white">{aparelho}</span>
+          )}
+        </div>
         <h1 className="text-2xl font-display font-bold leading-tight mt-0.5">{evento.nome}</h1>
         <div className="text-sm text-white/80 mt-0.5">
           {evento.local}
