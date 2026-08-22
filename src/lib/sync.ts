@@ -40,6 +40,7 @@ export interface PacoteRoster {
   versao: 1;
   evento: string;
   geradoEm: string;
+  centralAparelho: string; // apelido do aparelho central que gerou a lista ('' se não definido)
   config: Config;
   atletas: Atleta[];
 }
@@ -66,6 +67,7 @@ export function exportarRoster(estado: EstadoApp): string {
     versao: 1,
     evento: estado.config.evento.nome,
     geradoEm: new Date().toISOString(),
+    centralAparelho: estado.config.central ? estado.config.aparelho || 'Aparelho central' : '',
     config: estado.config,
     atletas
   };

@@ -118,6 +118,7 @@ export interface Config {
   avaliador: string; // nome de quem usa este aparelho (avaliador)
   aparelho: string; // apelido deste aparelho (ex.: "POCO X4")
   central: boolean; // este é o aparelho central (organizador que consolida tudo)
+  centralDefinidoPor: string; // apelido do central informado pela lista compartilhada (trava a opção)
 }
 
 export interface Grupo {
@@ -255,6 +256,7 @@ export function configPadrao(): Config {
     evento: eventoPadrao(),
     avaliador: '',
     aparelho: '',
-    central: false
+    central: false,
+    centralDefinidoPor: ''
   };
 }
